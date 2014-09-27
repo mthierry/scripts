@@ -1,0 +1,9 @@
+[filter "media"]
+	clean = git-media-clean %f
+	smudge = git-media-smudge %f
+[user]
+	name = Michel Thierry
+	email = github@michelthierry.org
+
+[alias]
+lol = log --pretty=oneline --abbrev-commit --graph --decorate
