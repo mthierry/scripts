@@ -1,0 +1,2 @@
+https-proxy = http://10.10.10.10:911
+#strict-ssl = false
