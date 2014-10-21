@@ -8,3 +8,5 @@ alias subl='/Applications/Sublime\ Text\ 2.app/Contents/SharedSupport/bin/subl'
 alias ll='ls -lah'
 alias gg='git status -s'
 alias u='cd ..'
+alias mgrep="grep -R --exclude-dir=\*/.git\* --exclude-dir=\*/.git/\* --exclude-dir=\*/.svn/\* --exclude=.tags --exclude=\*.o --exclude=\*.ko"
+#alias eclipse="/path_to/eclipse_luna/eclipse -vmargs -Xmx1024m &"
