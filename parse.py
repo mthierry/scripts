@@ -11,24 +11,23 @@ from email.MIMEText import MIMEText
 from email.Utils import COMMASPACE, formatdate
 from email import Encoders
 
-info  = "# Usage: python parse.py <PATH_TO>/file_to_parse.c parsedoutput.csv [reference.csv]\n"
+info  = "# Usage: python parse.py <PATH_TO/.../.../Source> file_to_parse.c parsedoutput.csv [reference.csv]\n"
 info += "# If a reference.csv is given, an email with diffs will be generated.\n"
-info += "# Remember to update 'sourcePath'\n"
 
-# Update the sourcePath to point the branch you want to use.
-sourcePath = "/usr3/dev/perforce/mainline/Source/"
 # ------------------------------------------------------------
-if len(sys.argv) < 2 :
+if len(sys.argv) < 4 :
 	print "Not enough parameters"
 	print info
 	sys.exit(0)
 
-inwafile, outcsvfile = sys.argv[1], sys.argv[2]
+sourcePath = sys.argv[1]
+inwafile = sourcePath + "/skuwa/" + sys.argv[2]
+outcsvfile = sys.argv[3]
 
-if len(sys.argv) == 4 :
-	prevcsvfile = sys.argv[3]
+if len(sys.argv) == 5 :
+	prevcsvfile = sys.argv[4]
 
-inwacommentsfile = sourcePath + "the_comments_file.h"
+inwacommentsfile = sourcePath + "/inc/common/the_comments_file.h"
 fieldnames = ['WA Name', 'Needed for', 'Component', 'HWBugLink', 'HWSightingLink', 'Platform', 'Description' ]
 
 # -------------------------------------------------------------
@@ -68,7 +67,7 @@ def grep(path, name):
 				tmpfile = open(os.path.join(root, fname), 'r')
 				tmpdata = mmap.mmap(tmpfile.fileno(), 0, prot=mmap.PROT_READ)
 				if re.search(name, tmpdata):
-					libname = re.sub('^.*Source/', '', root)
+					libname = re.sub("%s" % sourcePath, '', root)
 					# Don't add duplicates
 					if (libname in res) == False :
 						res.append(libname)
@@ -117,8 +116,8 @@ def sendtheemail(emailtext, emailfiles=[]):
 
 # _main_:
 try:
-	wafile = open(inwafile, 'r')
-	csvwriter = csv.writer(open(outcsvfile, "wb"))
+	wafile = open(inwafile, 'rb')
+	csvwriter = csv.writer(open(outcsvfile, "wb"), lineterminator='\n')
 	csvwriter.writerow(fieldnames)
 
 	for line in wafile:
@@ -133,7 +132,7 @@ try:
 			print waName + " found"
 			component = grep(sourcePath, waName)
 			# find more info from comments file .h
-			wacommentsfile = open(inwacommentsfile, 'r')
+			wacommentsfile = open(inwacommentsfile, 'rb')
 			for commentline in wacommentsfile:
 				if re.search(r"%s" % waName, commentline):
 					description = next(wacommentsfile).strip(' ,;)"\t\n\r')
@@ -150,7 +149,7 @@ try:
 
 			# report newly found/changed _magic_ if reference csv was given
 			if len(sys.argv) == 4 :
-				prevwafile = open(prevcsvfile, 'r')
+				prevwafile = open(prevcsvfile, 'rb')
 				for anotherline in prevwafile:
 					if re.search(r"%s" % waName, anotherline):
 						wainprevcsvfile = True
