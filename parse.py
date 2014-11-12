@@ -37,7 +37,7 @@ emailto = "someone@emal.com"
 emailsmtp = "smtp.mail.com"
 emailsubject = "update detected in " + re.sub('^.*Source/', '', inwafile)
 emailfileinfo  = str("<p><b>New CSV file:</b> %s<br>" % outcsvfile)
-if len(sys.argv) == 4 :
+if len(sys.argv) == 5 :
 	emailfileinfo += str("<b>Reference CSV file:</b> %s</p>" % prevcsvfile)
 
 emailtext = " new (or renamed) _magic_ found:<br><br>"
@@ -148,7 +148,7 @@ try:
 			csvwriter.writerow(csvline)
 
 			# report newly found/changed _magic_ if reference csv was given
-			if len(sys.argv) == 4 :
+			if len(sys.argv) == 5 :
 				prevwafile = open(prevcsvfile, 'rb')
 				for anotherline in prevwafile:
 					if re.search(r"%s" % waName, anotherline):
