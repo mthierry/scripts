@@ -23,6 +23,7 @@ if len(sys.argv) < 4 :
 sourcePath = sys.argv[1]
 inwafile = sourcePath + "/skuwa/" + sys.argv[2]
 outcsvfile = sys.argv[3]
+outcsvfilecore = outcsvfile.replace(".csv", "_coreonly.csv")
 
 if len(sys.argv) == 5 :
 	prevcsvfile = sys.argv[4]
@@ -119,10 +120,13 @@ try:
 	wafile = open(inwafile, 'rb')
 	csvwriter = csv.writer(open(outcsvfile, "wb"), lineterminator='\n')
 	csvwriter.writerow(fieldnames)
+	csvwritercore = csv.writer(open(outcsvfilecore, "wb"), lineterminator='\n')
+	csvwritercore.writerow(fieldnames)
 
 	for line in wafile:
 		if re.search(r"WA_ENABLE", line):
 			csvline = []
+			corewa = False
 			ulStepId = next(wafile).strip(' ,;)"\t\n\r')
 			waName = next(wafile).strip(' ,;)"\t\n\r')
 			hwBugLink = next(wafile).strip(' ,;)"\t\n\r')
@@ -131,6 +135,10 @@ try:
 			stepping = next(wafile).strip(' ,;)"\t\n\r')
 			print waName + " found"
 			component = grep(sourcePath, waName)
+			# check for core magic only
+			for c in component:
+				if c.find("magicname") > -1:
+					corewa = True
 			# find more info from comments file .h
 			wacommentsfile = open(inwacommentsfile, 'rb')
 			for commentline in wacommentsfile:
@@ -146,6 +154,8 @@ try:
 			csvline.append(platform)
 			csvline.append(description)
 			csvwriter.writerow(csvline)
+			if corewa == True:
+				csvwritercore.writerow(csvline)
 
 			# report newly found/changed _magic_ if reference csv was given
 			if len(sys.argv) == 5 :
@@ -167,10 +177,11 @@ try:
 finally:
 	wafile.close()
 	del csvwriter
+	del csvwritercore
 	if sendemail == True :
 		emailtext = "<p>" + `emailchangescount` + emailtext + "<br>"
 		emailtext += "<hr><br><b>Full CSV diff:</b><br>"
 		emailtext += "(green = added, red = removed)<br><br>"
-		attachements = [outcsvfile, prevcsvfile]
+		attachements = [outcsvfile, prevcsvfile, outcsvfilecore]
 		sendtheemail(emailfileinfo + emailtext, attachements)
 	print "bye"
